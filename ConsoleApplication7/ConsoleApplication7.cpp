@@ -1,136 +1,63 @@
-﻿#include <iostream>		// для консольного ввода-вывода
-#include <string>		// для переменных типа данных string
-#include <Windows.h>	// для кодировок (поддержка кирилицы)
-#include <iomanip>		// для форматированного вывода
+﻿#include <iostream>
+#include <fstream>
+#include <string>
+#include <cctype> // для функции isvowel()
 
-// подключаем стандартное пространство имен
 using namespace std;
 
-// определяем структуру "Ребенок"
-typedef struct TChild
-{
-	string name; // имя ребенка
-	char sex; // пол ребенка (М - мужской; Ж - женский)
-	int height; // рост ребенка
-} Child;
-
-// вывод информации обо всех детях на экран в табличном формате
-void Print_children(Child* children, const int children_count)
-{
-	int average = 0;
-	cout << endl << "Информация о детях(" << children_count << " чел.) имеет вид:" << endl;
-	SetConsoleCP(866);
-
-	cout << "" << endl;
-	cout << "     №             Имя            Пол         Рост, см" << endl;
-	cout << "" << endl;
-	for (int i = 0; i < children_count; i++)
-	{
-		cout << setw(6) << (i + 1) << "\t";
-		cout << setw(17) << children[i].name << "\t";
-		cout << setw(4) << children[i].sex << "\t";
-		cout << setw(12) << children[i].height << endl;
-	}
-	cout << "" << endl;
+bool isvowel(char c) {
+    // Возвращает true, если символ является гласной буквой
+    switch (tolower(c)) {
+    case 'a':
+    case 'e':
+    case 'i':
+    case 'o':
+    case 'u':
+        cout << "фамилия начинается с гласной" << endl;
+        return true;
+    default:
+        cout << "фамилия не начинается с гласной" << endl;
+        return false;
+    }
 }
 
-void Print_children_lower_than_average(Child* children, const int children_count, int average)
-{
-	cout << endl << "Информация о детях ниже ср. роста имеет вид:" << endl;
-	SetConsoleCP(866);
-	cout << "" << endl;
-	cout << "     №             Имя            " << endl;
-	cout << "" << endl;
-	for (int i = 0; i < children_count; i++)
-	{
-		if (children[i].height < average)
-		{
-			cout << setw(6) << (i + 1) << "\t";
-			cout << setw(17) << children[i].name << "\t" << endl;
-		}
+int main() {
+    setlocale(LC_ALL, "Rus");
+    string surname, name;
 
-	}
-	cout << "" << endl;
-}
+    // Запрашиваем фамилию и имя пользователя
+    cout << "Введите фамилию: ";
+    cin >> surname;
+    cout << "Введите имя: ";
+    cin >> name;
 
-void Print_child_max(Child* children, const int children_count)
-{
-	int max = children[0].height;
-	int i_max = 0;
-	for (int i = 1; i <= children_count; i++)
-		if (children[i].height > max)
-		{
-			max = children[0].height;
-			i_max = i;
-		}
-	cout << "								Самый высокий ребенок" << endl;
-	cout << "" << endl;
-	cout << children[i_max].name << endl;
-	cout << "" << endl;
+    // Открываем файл для записи
+    ofstream outfile("names.txt");
 
-}
-// получение среднего роста всех детей
-double Get_average_height(Child* children, const int children_count)
-{
-	// отвечает за среднее значение возраста всех детей
-	double average = 0;
+    // Записываем фамилию и имя в файл
+    outfile << surname << " " << name << endl;
 
-	// перебираем всех детей
-	for (int i = 0; i < children_count; i++)
-		average += children[i].height; // добавляем возраст текущего ребенка к результату
+    // Закрываем файл
+    outfile.close();
 
-	// чтобы получить среднее значение, надо сумму разделить на количество
-	return (average / (children_count * 1.0));
-}
+    // Открываем файл для чтения
+    ifstream infile("names.txt");
 
-// главная функция программы (точка входа)
-int main(void)
-{
-	// русификация всех диалогов программы
-	setlocale(LC_ALL, "Russian");
+    // Открываем файл для записи имен, начинающихся на гласные буквы
+    ofstream outfile2("vowel_names.txt");
 
-	// отвечает за количество детей
-	const size_t CHILDREN_COUNT = 3;
+    // Читаем строки из файла и проверяем, начинается ли имя на гласную букву
+    while (infile >> surname >> name) {
+        if (isvowel(surname[0])) {
+            outfile2 << surname <<  endl;
+        }
+    }
 
-	// хранит информацию о 20 детях
-	Child children[CHILDREN_COUNT];
+    // Закрываем файлы
+    infile.close();
+    outfile2.close();
 
-	// запрашиваем от пользователя ввод информации о 20 детях
-	cout << "Введите информацию о " << CHILDREN_COUNT << " детях." << endl;
-	for (int i = 0; i < CHILDREN_COUNT; i++)
-	{
-		fflush(stdin);
-		cout << "\t Ребенок № " << (i + 1) << endl;
+    cout << "Готово!" << endl;
 
-		cout << "\t\t -  имя: ";
-		SetConsoleCP(1251);
-		cin >> children[i].name;
-		SetConsoleCP(866);
-
-		cout << "\t\t -  пол (М/Ж): ";
-		SetConsoleCP(1251);
-		cin >> children[i].sex;
-		SetConsoleCP(866);
-
-		cout << "\t\t - рост, см: ";
-		cin >> children[i].height;
-		cout << endl;
-	}
-
-	// выводим информацию о детях на экран в красивом табличном формате
-	Print_children(children, CHILDREN_COUNT);
-	int average = Get_average_height(children, CHILDREN_COUNT);
-	// выводим средний рост всех детей
-	cout << "Средний возраст всех детей: " << setprecision(3) << fixed << average << endl << endl;
-
-
-	Print_children_lower_than_average(children, CHILDREN_COUNT, average);
-	// задержка работы программы, чтобы у пользователя была возможность просмотреть результат
-
-	Print_child_max(children, CHILDREN_COUNT);
-	fflush(stdin);
-	system("pause");
-
-	// завершение выполнение программы и передача управления в ОС (код 0 - все прошло успешно!)
-	return 0;
+    return 0;
 }
